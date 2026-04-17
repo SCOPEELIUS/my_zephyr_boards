@@ -1,0 +1,183 @@
+/*
+* Copyright (c) 2026 Elius Faustine <scopeelius@gmail.com>
+*
+* SPDX-License-Identifier: Apache-2.0
+*/
+
+/dts-v1/;
+#include <st/l0/stm32l051X8.dtsi>
+#include <st/l0/stm32l051c(6-8)tx-pinctrl.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "STMicroelectronics STM32L051C8T6-CUSTOM board";
+	compatible = "st,stm32l051c8t6";
+	
+	chosen {
+		zephyr,console = &rtt0;
+		zephyr,shell-uart = &rtt0;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+	
+	leds: leds {
+		compatible = "gpio-leds";
+		
+		debug_led: led_0 {
+			gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+			label = "User LD2";
+		};
+	};
+	
+	aliases {
+		led0 = &debug_led;
+		eeprom-0 = &eeprom;
+	};
+};
+
+&clk_lse {
+	status = "okay";
+};
+
+&clk_msi {
+	status = "okay";
+	msi-range = <2>; /* 262.144 kHz */
+};
+
+&rcc {
+	clocks = <&clk_msi>;
+	clock-frequency = <DT_FREQ_K(262)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <1>;
+	apb2-prescaler = <1>;
+};
+
+&gpioc {
+	status = "disabled";
+};
+
+&gpiod {
+	status = "disabled";
+};
+
+&gpioh {
+	status = "disabled";
+};
+
+rtt0: rtt {
+	compatible = "segger,rtt-uart";
+	status = "okay";
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-1 = <&usart1_sleep>;
+	pinctrl-names = "default", "sleep";
+	current-speed = <9600>;
+	fifo-enable;
+	status = "disabled";
+};
+
+&lpuart1 {
+	pinctrl-0 = <&lpuart1_tx_pb10 &lpuart1_rx_pb11>;
+	pinctrl-1 = <&lpuart1_sleep>;
+	pinctrl-names = "default", "sleep";
+	fifo-enable;
+	current-speed = <9600>;
+};
+
+&usart2 {
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	pinctrl-1 = <&usart2_sleep>;
+	pinctrl-names = "default", "sleep";
+	current-speed = <9600>;
+	status = "disabled";
+};
+
+&i2c1 {
+	pinctrl-0 = <&i2c1_scl_pb8 &i2c1_sda_pb9>;
+	pinctrl-names = "default";
+	status = "disabled";
+	clock-frequency = <I2C_BITRATE_FAST>;
+};
+
+&spi1 {
+	pinctrl-0 = <&spi1_sck_pa5 &spi1_miso_pa6 &spi1_mosi_pa7>;
+	pinctrl-names = "default";
+	status = "disabled";
+};
+
+&eeprom {
+	status = "disabled";
+};
+
+&adc1 {
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <1>;
+	pinctrl-0 = <&adc_in1_pa1>;
+	pinctrl-names = "default";
+};
+
+&lptim1 {
+	status = "okay";
+};
+
+&rtc {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x10000000>, <&rcc STM32_SRC_LSE RTC_SEL(1)>;
+	status = "okay";
+};
+
+&bbram {
+	status = "okay";
+};
+
+&vref {
+	status = "okay";
+};
+
+&cpu0 {
+	cpu-power-states = <&stop_mode &lp_run_mode>;
+};
+
+power-states {
+	stop_mode: state0 {
+		compatible = "zephyr,power-state";
+		power-state-name = "suspend-to-idle";
+		substate-id = <1>;
+		min-residency-us = <500>;
+		exit-latency-us = <10>;
+	};
+	
+	lp_run_mode: state1 {
+		compatible = "zephyr,power-state";
+		power-state-name = "runtime-idle";
+		substate-id = <2>;
+		min-residency-us = <1000>;
+	};
+};
+
+&pinctrl {
+	/* New: The 'neutralized' state for the LPUART pins */
+	lpuart1_sleep: lpuart1_sleep {
+		group1 {
+			pinmux = <STM32_PINMUX('B', 10, ANALOG)>,
+			<STM32_PINMUX('B', 11, ANALOG)>;
+		};
+	};
+	
+	/* Analog state for USART1 (Debug Console) */
+	usart1_sleep: usart1_sleep {
+		group1 {
+			pinmux = <STM32_PINMUX('A', 9, ANALOG)>,
+			<STM32_PINMUX('A', 10, ANALOG)>;
+		};
+	};
+	
+	/* Analog state for USART2 */
+	usart2_sleep: usart2_sleep {
+		group1 {
+			pinmux = <STM32_PINMUX('A', 2, ANALOG)>,
+			<STM32_PINMUX('A', 3, ANALOG)>;
+		};
+	};
+};

@@ -1,0 +1,43 @@
+# Kconfig.defconfig syntax: Use 'default'
+if BOARD_VORTAN_L0
+
+config PM
+    default y
+config PM_DEVICE
+    default y
+config PM_DEVICE_RUNTIME
+    default y
+
+config STM32_LPTIM_TIMER
+    default y
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+    default 262144
+config SYS_CLOCK_TICKS_PER_SEC
+    default 128
+
+config ADC
+    default y
+config ADC_STM32
+    default y
+config SENSOR
+    default y
+config STM32_VREF
+    default y
+
+# RAM-Squeezing RTT Setup
+config LOG
+    default y
+config USE_SEGGER_RTT
+    default y
+config RTT_CONSOLE
+    default y
+config UART_CONSOLE
+    default n
+
+# CRITICAL: Shrink buffers for your 8KB SRAM
+config SEGGER_RTT_BUFFER_SIZE_UP
+    default 256
+config LOG_BUFFER_SIZE
+    default 512
+
+endif
