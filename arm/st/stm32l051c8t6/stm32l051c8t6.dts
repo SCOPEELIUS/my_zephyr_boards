@@ -33,6 +33,28 @@
 		led0 = &debug_led;
 		eeprom-0 = &eeprom;
 	};
+	
+	rtt0: rtt {
+		compatible = "segger,rtt-uart";
+		status = "okay";
+	};
+	
+	power-states {
+		stop_mode: state0 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = <1>;
+			min-residency-us = <500>;
+			exit-latency-us = <10>;
+		};
+		
+		lp_run_mode: state1 {
+			compatible = "zephyr,power-state";
+			power-state-name = "runtime-idle";
+			substate-id = <2>;
+			min-residency-us = <1000>;
+		};
+	};
 };
 
 &clk_lse {
@@ -64,14 +86,11 @@
 	status = "disabled";
 };
 
-rtt0: rtt {
-	compatible = "segger,rtt-uart";
-	status = "okay";
-};
+
 
 &usart1 {
 	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
-	pinctrl-1 = <&usart1_sleep>;
+	pinctrl-1 = <&analog_pa9 &analog_pa10>;
 	pinctrl-names = "default", "sleep";
 	current-speed = <9600>;
 	fifo-enable;
@@ -80,15 +99,14 @@ rtt0: rtt {
 
 &lpuart1 {
 	pinctrl-0 = <&lpuart1_tx_pb10 &lpuart1_rx_pb11>;
-	pinctrl-1 = <&lpuart1_sleep>;
+	pinctrl-1 = <&analog_pb10 &analog_pb11>;
 	pinctrl-names = "default", "sleep";
-	fifo-enable;
 	current-speed = <9600>;
 };
 
 &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
-	pinctrl-1 = <&usart2_sleep>;
+	pinctrl-1 = <&analog_pa2 &analog_pa3>;
 	pinctrl-names = "default", "sleep";
 	current-speed = <9600>;
 	status = "disabled";
@@ -139,45 +157,6 @@ rtt0: rtt {
 	cpu-power-states = <&stop_mode &lp_run_mode>;
 };
 
-power-states {
-	stop_mode: state0 {
-		compatible = "zephyr,power-state";
-		power-state-name = "suspend-to-idle";
-		substate-id = <1>;
-		min-residency-us = <500>;
-		exit-latency-us = <10>;
-	};
-	
-	lp_run_mode: state1 {
-		compatible = "zephyr,power-state";
-		power-state-name = "runtime-idle";
-		substate-id = <2>;
-		min-residency-us = <1000>;
-	};
-};
 
-&pinctrl {
-	/* New: The 'neutralized' state for the LPUART pins */
-	lpuart1_sleep: lpuart1_sleep {
-		group1 {
-			pinmux = <STM32_PINMUX('B', 10, ANALOG)>,
-			<STM32_PINMUX('B', 11, ANALOG)>;
-		};
-	};
-	
-	/* Analog state for USART1 (Debug Console) */
-	usart1_sleep: usart1_sleep {
-		group1 {
-			pinmux = <STM32_PINMUX('A', 9, ANALOG)>,
-			<STM32_PINMUX('A', 10, ANALOG)>;
-		};
-	};
-	
-	/* Analog state for USART2 */
-	usart2_sleep: usart2_sleep {
-		group1 {
-			pinmux = <STM32_PINMUX('A', 2, ANALOG)>,
-			<STM32_PINMUX('A', 3, ANALOG)>;
-		};
-	};
-};
+
+
